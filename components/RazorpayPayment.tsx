@@ -57,10 +57,10 @@ export default function RazorpayPayment({
       return;
     }
 
-    // Validate phone number is exactly 10 digits
+    // Validate phone number is at least 10 digits
     const phoneDigits = userDetails.phone.replace(/\D/g, '');
-    if (phoneDigits.length !== 10) {
-      onError('Phone number must be exactly 10 digits');
+    if (phoneDigits.length < 10) {
+      onError('Phone number must be at least 10 digits');
       return;
     }
 
