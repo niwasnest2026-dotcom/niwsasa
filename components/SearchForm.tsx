@@ -6,6 +6,7 @@ import {
   FaMapMarkerAlt, FaSearch, FaCalendarAlt, FaUser, FaUsers
 } from 'react-icons/fa';
 import { supabase } from '@/lib/supabase';
+import EmptyStatePage from './EmptyStatePage';
 
 const genderOptions = [
   { value: 'any', label: 'Any', icon: FaUsers },
@@ -204,7 +205,15 @@ export default function SearchForm() {
   }, []);
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <>
+      {/* Show empty state if no locations available after loading */}
+      {!locationsLoading && availableLocations.length === 0 && (
+        <EmptyStatePage />
+      )}
+
+      {/* Show search form if locations are available or still loading */}
+      {(locationsLoading || availableLocations.length > 0) && (
+        <div className="w-full max-w-5xl mx-auto">
       <form onSubmit={handleSearch} className="space-y-6">
         {/* Main Search Card */}
         <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-xl p-6 md:p-8">
@@ -218,8 +227,6 @@ export default function SearchForm() {
                 placeholder={
                   locationsLoading
                     ? "Loading locations..."
-                    : availableLocations.length === 0
-                    ? "No locations available - Add properties in admin panel"
                     : "Search by area, college, or office"
                 }
                 value={location}
@@ -490,6 +497,8 @@ export default function SearchForm() {
           </div>
         )}
       </form>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
