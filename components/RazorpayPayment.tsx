@@ -16,6 +16,7 @@ interface RazorpayPaymentProps {
     email: string;
     phone: string;
   };
+  onSuccess?: (paymentId: string, bookingId: string) => void;
   onError: (error: string) => void;
 }
 
@@ -31,6 +32,7 @@ export default function RazorpayPayment({
   roomId,
   propertyName,
   userDetails,
+  onSuccess,
   onError,
 }: RazorpayPaymentProps) {
   const [loading, setLoading] = useState(false);
@@ -149,15 +151,8 @@ export default function RazorpayPayment({
               
               // Small delay to show notification before redirect
               setTimeout(() => {
-                const successUrl = `/payment-success?` + new URLSearchParams({
-                  paymentId: response.razorpay_payment_id,
-                  bookingId: verifyData.booking_id,
-                  amount: amount.toString(),
-                  propertyName: propertyName,
-                  guestName: userDetails.name,
-                  propertyId: propertyId
-                }).toString();
-                
+                // Redirect to booking success page with booking ID
+                const successUrl = `/booking-success?booking_id=${verifyData.booking_id}`;
                 window.location.href = successUrl;
               }, 2000);
             } else {
