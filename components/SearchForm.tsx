@@ -218,8 +218,6 @@ export default function SearchForm() {
                 placeholder={
                   locationsLoading
                     ? "Loading locations..."
-                    : availableLocations.length === 0
-                    ? "No locations available - Add properties in admin panel"
                     : "Search by area, college, or office"
                 }
                 value={location}
@@ -329,14 +327,14 @@ export default function SearchForm() {
                       No properties found in "{location}"
                     </div>
                     <div className="text-sm text-gray-400">
-                      Try searching for nearby areas or add properties in this location through admin panel
+                      Try searching for nearby areas or check back soon for more listings
                     </div>
                   </div>
                 ) : availableLocations.length === 0 ? (
                   <div className="px-6 py-4 text-center">
-                    <div className="text-gray-500 mb-2">No locations available</div>
+                    <div className="text-gray-500 mb-2">Coming Soon</div>
                     <div className="text-xs text-gray-400">
-                      Add properties through admin panel to see locations here
+                      We're adding properties in your area. Check back soon!
                     </div>
                   </div>
                 ) : null}
