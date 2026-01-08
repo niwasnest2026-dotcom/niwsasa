@@ -3,13 +3,14 @@ import Razorpay from 'razorpay';
 import { createClient } from '@supabase/supabase-js';
 import { ENV_CONFIG } from '@/lib/env-config';
 
-const razorpay = new Razorpay({
-  key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-  key_secret: ENV_CONFIG.RAZORPAY_KEY_SECRET!,
-});
-
 export async function POST(request: NextRequest) {
   try {
+    // Initialize Razorpay
+    const razorpay = new Razorpay({
+      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    });
+
     // Validate authentication
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {

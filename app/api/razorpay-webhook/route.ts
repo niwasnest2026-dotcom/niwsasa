@@ -15,8 +15,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify webhook signature
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || '';
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET!)
+      .createHmac('sha256', webhookSecret)
       .update(body)
       .digest('hex');
 
