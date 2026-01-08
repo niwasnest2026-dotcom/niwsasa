@@ -206,6 +206,30 @@ export default function SearchForm() {
   return (
     <div className="w-full max-w-5xl mx-auto">
       <form onSubmit={handleSearch} className="space-y-6">
+        {/* Available Properties Message */}
+        {!locationsLoading && availableLocations.length > 0 && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-4 md:p-6">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <h3 className="text-lg md:text-xl font-bold text-green-900">
+                  ✨ {availableLocations.length} Locations Available
+                </h3>
+                <p className="text-green-700 text-sm md:text-base mt-1">
+                  Properties added and ready to explore
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl md:text-3xl font-bold text-green-600">
+                  {availableLocations.length}
+                </div>
+                <div className="text-xs md:text-sm text-green-600 font-medium">
+                  Active Locations
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Search Card */}
         <div className="bg-white/95 backdrop-blur-md rounded-3xl shadow-xl p-6 md:p-8">
           {/* Primary Location Search */}
