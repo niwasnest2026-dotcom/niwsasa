@@ -5,10 +5,19 @@ import { ENV_CONFIG } from '@/lib/env-config';
 
 export async function POST(request: NextRequest) {
   try {
-    // Initialize Razorpay
+    // Debug environment variables
+    console.log('🔍 Environment Check:', {
+      hasRazorpayKeyId: !!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      hasRazorpaySecret: !!process.env.RAZORPAY_KEY_SECRET,
+      hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      serviceRoleKeyFromConfig: !!ENV_CONFIG.SUPABASE_SERVICE_ROLE_KEY,
+      razorpaySecretFromConfig: !!ENV_CONFIG.RAZORPAY_KEY_SECRET
+    });
+
+    // Initialize Razorpay with fallback from ENV_CONFIG
     const razorpay = new Razorpay({
-      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_1DP5mmOlF5G5ag',
+      key_secret: ENV_CONFIG.RAZORPAY_KEY_SECRET,
     });
 
     // Validate authentication
@@ -104,12 +113,21 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Order creation error:', error);
-    
+    console.error('❌ Order creation error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code,
+      statusCode: error.statusCode,
+      fullError: error
+    });
+
     return NextResponse.json(
       {
         success: false,
         message: 'Unable to create payment order',
+        error: error.message || 'Unknown error',
+        errorCode: error.code || error.statusCode
       },
       { status: 500 }
     );
