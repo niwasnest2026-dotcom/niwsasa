@@ -438,16 +438,18 @@ export default function PaymentPage() {
                       name="phone"
                       value={formData.phone}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                         setFormData(prev => ({ ...prev, phone: value }));
                       }}
                       required
                       minLength={10}
+                      maxLength={10}
+                      pattern="[0-9]{10}"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder="Enter phone number (minimum 10 digits)"
+                      placeholder="Enter 10-digit phone number"
                     />
-                    {formData.phone && formData.phone.length > 0 && formData.phone.length < 10 && (
-                      <p className="text-red-500 text-xs mt-1">Phone number must be at least 10 digits</p>
+                    {formData.phone && formData.phone.length > 0 && formData.phone.length !== 10 && (
+                      <p className="text-red-500 text-xs mt-1">Phone number must be exactly 10 digits</p>
                     )}
                   </div>
                   <div>
@@ -459,16 +461,18 @@ export default function PaymentPage() {
                       name="whatsappNumber"
                       value={formData.whatsappNumber}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                         setFormData(prev => ({ ...prev, whatsappNumber: value }));
                       }}
                       required
                       minLength={10}
+                      maxLength={10}
+                      pattern="[0-9]{10}"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder="Enter WhatsApp number (minimum 10 digits)"
+                      placeholder="Enter 10-digit WhatsApp number"
                     />
-                    {formData.whatsappNumber && formData.whatsappNumber.length > 0 && formData.whatsappNumber.length < 10 && (
-                      <p className="text-red-500 text-xs mt-1">WhatsApp number must be at least 10 digits</p>
+                    {formData.whatsappNumber && formData.whatsappNumber.length > 0 && formData.whatsappNumber.length !== 10 && (
+                      <p className="text-red-500 text-xs mt-1">WhatsApp number must be exactly 10 digits</p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
                       Property owner will contact you on this number

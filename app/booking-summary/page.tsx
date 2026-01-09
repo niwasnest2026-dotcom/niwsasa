@@ -292,16 +292,18 @@ export default function BookingSummaryPage() {
                     type="tel"
                     value={userDetails.phone}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 10);
                       setUserDetails(prev => ({ ...prev, phone: value }));
                     }}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="Enter phone number (minimum 10 digits)"
+                    placeholder="Enter 10-digit phone number"
                     minLength={10}
+                    maxLength={10}
+                    pattern="[0-9]{10}"
                     required
                   />
-                  {userDetails.phone && userDetails.phone.length > 0 && userDetails.phone.length < 10 && (
-                    <p className="text-red-500 text-sm mt-1">Phone number must be at least 10 digits</p>
+                  {userDetails.phone && userDetails.phone.length > 0 && userDetails.phone.length !== 10 && (
+                    <p className="text-red-500 text-sm mt-1">Phone number must be exactly 10 digits</p>
                   )}
                 </div>
               </div>
