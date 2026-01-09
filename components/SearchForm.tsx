@@ -298,13 +298,6 @@ export default function SearchForm() {
                         </div>
                       </button>
                     ))}
-                    {!location.trim() && availableLocations.length > 12 && (
-                      <div className="px-6 py-3 text-center border-t border-gray-100">
-                        <p className="text-sm text-gray-500">
-                          Showing 12 of {availableLocations.length} locations. Start typing to search more.
-                        </p>
-                      </div>
-                    )}
                   </>
                 ) : location.trim() ? (
                   <div className="px-6 py-8 text-center">
