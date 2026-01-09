@@ -40,7 +40,14 @@ export default function RazorpayPayment({
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
 
+  // Get Razorpay key from environment
+  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_1DP5mmOlF5G5ag';
+
   const handlePayment = async () => {
+    console.log('🔑 Razorpay Key:', razorpayKey ? `${razorpayKey.substring(0, 10)}...` : 'NOT FOUND');
+    console.log('✅ Script Loaded:', scriptLoaded);
+    console.log('✅ Window.Razorpay:', typeof window.Razorpay);
+
     if (!scriptLoaded) {
       onError('Payment system is loading. Please try again.');
       return;
@@ -105,7 +112,7 @@ export default function RazorpayPayment({
 
       // Initialize Razorpay payment
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: razorpayKey,
         amount: orderData.amount,
         currency: orderData.currency,
         name: 'NiwasNest',
