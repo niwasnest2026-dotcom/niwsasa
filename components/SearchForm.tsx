@@ -259,30 +259,15 @@ export default function SearchForm() {
               >
                 {filteredLocations.length > 0 ? (
                   <>
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-gray-600">
-                          {location.trim() ?
-                            `Matching Locations (${filteredLocations.length})` :
-                            `Available Locations (${availableLocations.length} total)`
-                          }
-                        </span>
-                        {userLocation && !location.trim() && (
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                            Sorted by distance
+                    {location.trim() && (
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-600">
+                            Matching Locations ({filteredLocations.length})
                           </span>
-                        )}
+                        </div>
                       </div>
-                      {!location.trim() && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          {userLocation
-                            ? 'Showing nearest locations first based on your location'
-                            : 'Properties are available in these locations'
-                          }
-                        </p>
-                      )}
-                    </div>
+                    )}
                     {filteredLocations.map((locationName) => (
                       <button
                         key={locationName}
