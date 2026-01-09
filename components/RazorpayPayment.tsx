@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Script from 'next/script';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -42,6 +42,24 @@ export default function RazorpayPayment({
 
   // Get Razorpay key from environment
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_1DP5mmOlF5G5ag';
+
+  // Fallback check for Razorpay script loading
+  // Sometimes onLoad doesn't fire, so we check window.Razorpay directly
+  useEffect(() => {
+    const checkRazorpay = () => {
+      if (typeof window !== 'undefined' && window.Razorpay) {
+        setScriptLoaded(true);
+      }
+    };
+
+    // Check immediately
+    checkRazorpay();
+
+    // Check again after a delay
+    const timer = setTimeout(checkRazorpay, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handlePayment = async () => {
     console.log('🔑 Razorpay Key:', razorpayKey ? `${razorpayKey.substring(0, 10)}...` : 'NOT FOUND');
@@ -202,8 +220,19 @@ export default function RazorpayPayment({
     <>
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"
-        onLoad={() => setScriptLoaded(true)}
-        onError={() => onError('Failed to load payment system')}
+        strategy="lazyOnload"
+        onLoad={() => {
+          console.log('✅ Razorpay script loaded via onLoad callback');
+          setScriptLoaded(true);
+        }}
+        onError={(e) => {
+          console.error('❌ Failed to load Razorpay script:', e);
+          onError('Failed to load payment system');
+        }}
+        onReady={() => {
+          console.log('✅ Razorpay script ready');
+          setScriptLoaded(true);
+        }}
       />
       
       <div className="space-y-4">
