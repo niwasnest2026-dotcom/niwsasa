@@ -5,18 +5,14 @@ import { ENV_CONFIG } from '@/lib/env-config';
 
 export async function POST(request: NextRequest) {
   try {
-    // Debug environment variables
-    console.log('🔍 Environment Check:', {
-      hasRazorpayKeyId: !!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      hasRazorpaySecret: !!process.env.RAZORPAY_KEY_SECRET,
-      hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      serviceRoleKeyFromConfig: !!ENV_CONFIG.SUPABASE_SERVICE_ROLE_KEY,
-      razorpaySecretFromConfig: !!ENV_CONFIG.RAZORPAY_KEY_SECRET
-    });
-
+    console.log('📨 Create Order Request Received');
+    
     // Validate authentication first
     const authHeader = request.headers.get('authorization');
+    console.log('🔐 Auth Header Present:', !!authHeader);
+    
     if (!authHeader) {
+      console.error('❌ No authorization header');
       return NextResponse.json(
         { success: false, message: 'Authentication required' },
         { status: 401 }
@@ -24,6 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user session
+    console.log('🔍 Verifying user session...');
     const supabase = createClient(
       ENV_CONFIG.SUPABASE_URL,
       ENV_CONFIG.SUPABASE_ANON_KEY,
@@ -35,8 +32,10 @@ export async function POST(request: NextRequest) {
     );
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log('👤 User:', user?.id, 'Auth Error:', authError?.message);
     
     if (authError || !user) {
+      console.error('❌ Authentication failed:', authError?.message);
       return NextResponse.json(
         { success: false, message: 'Invalid authentication' },
         { status: 401 }
@@ -44,10 +43,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse request body
-    const { propertyId, amount, userDetails } = await request.json();
+    console.log('📦 Parsing request body...');
+    const body = await request.json();
+    const { propertyId, amount, userDetails } = body;
+    console.log('📋 Request Data:', { propertyId, amount, userDetailsPresent: !!userDetails });
 
     // Validate required fields
     if (!propertyId || !amount || !userDetails?.name || !userDetails?.email || !userDetails?.phone) {
+      console.error('❌ Missing required fields:', { propertyId, amount, userDetails });
       return NextResponse.json(
         { success: false, message: 'Missing required fields' },
         { status: 400 }
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate property exists
+    console.log('🏠 Validating property:', propertyId);
     const supabaseAdmin = createClient(
       ENV_CONFIG.SUPABASE_URL,
       ENV_CONFIG.SUPABASE_SERVICE_ROLE_KEY
@@ -66,7 +70,10 @@ export async function POST(request: NextRequest) {
       .eq('id', propertyId)
       .single();
 
+    console.log('🏠 Property Found:', property?.name, 'Error:', propertyError?.message);
+
     if (propertyError || !property) {
+      console.error('❌ Property not found:', propertyError?.message);
       return NextResponse.json(
         { success: false, message: 'Property not available' },
         { status: 404 }
@@ -74,12 +81,32 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize Razorpay only after validation
+    console.log('💳 Initializing Razorpay...');
+    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    
+    console.log('🔑 Razorpay Config:', {
+      hasKeyId: !!keyId,
+      hasKeySecret: !!keySecret,
+      keyIdLength: keyId?.length,
+      keySecretLength: keySecret?.length
+    });
+
+    if (!keyId || !keySecret) {
+      console.error('❌ Missing Razorpay credentials');
+      return NextResponse.json(
+        { success: false, message: 'Payment system not configured' },
+        { status: 500 }
+      );
+    }
+
     const razorpay = new Razorpay({
-      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
-      key_secret: process.env.RAZORPAY_KEY_SECRET || ENV_CONFIG.RAZORPAY_KEY_SECRET || '',
+      key_id: keyId,
+      key_secret: keySecret,
     });
 
     // Create Razorpay order
+    console.log('📝 Creating Razorpay order...');
     const orderOptions = {
       amount: Math.round(amount * 100), // Convert to paise
       currency: 'INR',
@@ -95,7 +122,10 @@ export async function POST(request: NextRequest) {
       },
     };
 
+    console.log('📋 Order Options:', { amount: orderOptions.amount, currency: orderOptions.currency });
+
     const order = await razorpay.orders.create(orderOptions as any) as any;
+    console.log('✅ Order Created:', order.id);
 
     return NextResponse.json({
       success: true,
@@ -115,19 +145,19 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Order creation error:', {
       message: error.message,
-      stack: error.stack,
-      name: error.name,
       code: error.code,
       statusCode: error.statusCode,
-      fullError: error
+      name: error.name,
+      stack: error.stack?.split('\n').slice(0, 3).join('\n')
     });
 
+    // Return detailed error for debugging
     return NextResponse.json(
       {
         success: false,
         message: 'Unable to create payment order',
         error: error.message || 'Unknown error',
-        errorCode: error.code || error.statusCode
+        errorCode: error.code || error.statusCode || 'UNKNOWN'
       },
       { status: 500 }
     );
