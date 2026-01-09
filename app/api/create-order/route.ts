@@ -14,13 +14,7 @@ export async function POST(request: NextRequest) {
       razorpaySecretFromConfig: !!ENV_CONFIG.RAZORPAY_KEY_SECRET
     });
 
-    // Initialize Razorpay with fallback from ENV_CONFIG
-    const razorpay = new Razorpay({
-      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_1DP5mmOlF5G5ag',
-      key_secret: ENV_CONFIG.RAZORPAY_KEY_SECRET,
-    });
-
-    // Validate authentication
+    // Validate authentication first
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
       return NextResponse.json(
@@ -78,6 +72,12 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Initialize Razorpay only after validation
+    const razorpay = new Razorpay({
+      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+      key_secret: process.env.RAZORPAY_KEY_SECRET || ENV_CONFIG.RAZORPAY_KEY_SECRET || '',
+    });
 
     // Create Razorpay order
     const orderOptions = {
