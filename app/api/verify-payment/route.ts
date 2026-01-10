@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Create booking data matching the database schema
+    // Note: security_deposit_per_person is NOT NULL in the database, so always include it
     const bookingData: any = {
       property_id: propertyId,
       user_id: user.id,
@@ -183,9 +184,10 @@ export async function POST(request: NextRequest) {
       guest_phone: userDetails.phone,
       sharing_type: sharingType,
       price_per_person: pricePerPerson || 0,
-      total_amount: pricePerPerson || 0,
+      security_deposit_per_person: securityDeposit || 0, // Required field - always include
+      total_amount: (pricePerPerson || 0) + (securityDeposit || 0),
       amount_paid: Math.round((pricePerPerson || 0) * 0.2),
-      amount_due: Math.round((pricePerPerson || 0) * 0.8),
+      amount_due: Math.round((pricePerPerson || 0) * 0.8) + (securityDeposit || 0),
       payment_method: 'razorpay',
       payment_status: 'paid',
       booking_status: 'booked',
@@ -198,9 +200,6 @@ export async function POST(request: NextRequest) {
     // Add optional fields only if they have values
     if (roomId) {
       bookingData.room_id = roomId;
-    }
-    if (securityDeposit > 0) {
-      bookingData.security_deposit_per_person = securityDeposit;
     }
 
     console.log('📝 Booking data to insert:', JSON.stringify(bookingData, null, 2));
