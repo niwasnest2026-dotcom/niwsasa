@@ -30,19 +30,25 @@ export default function BookingSuccessPage() {
   useEffect(() => {
     const fetchBooking = async () => {
       if (!bookingId) {
+        console.error('❌ No booking ID provided');
         setError('No booking ID provided');
         setLoading(false);
         return;
       }
 
+      console.log('📖 Fetching booking:', bookingId);
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
+          console.error('❌ No session found');
           setError('Please login to view booking details');
           setLoading(false);
           return;
         }
+
+        console.log('✅ Session found, fetching booking...');
 
         const { data, error: fetchError } = await supabase
           .from('bookings')
@@ -50,14 +56,24 @@ export default function BookingSuccessPage() {
           .eq('id', bookingId)
           .single();
 
-        if (fetchError || !data) {
+        if (fetchError) {
+          console.error('❌ Fetch error:', fetchError);
           setError('Booking not found');
           setLoading(false);
           return;
         }
 
+        if (!data) {
+          console.error('❌ No booking data returned');
+          setError('Booking not found');
+          setLoading(false);
+          return;
+        }
+
+        console.log('✅ Booking fetched successfully:', data);
         setBooking(data);
       } catch (err: any) {
+        console.error('❌ Error:', err);
         setError(err.message || 'Failed to load booking details');
       } finally {
         setLoading(false);

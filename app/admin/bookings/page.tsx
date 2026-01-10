@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { FaArrowLeft, FaPhone, FaEnvelope, FaCalendarAlt, FaRupee } from 'react-icons/fa';
+import { FaArrowLeft, FaPhone, FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
 import Link from 'next/link';
 
 interface Booking {
@@ -34,15 +34,22 @@ export default function AdminBookingsPage() {
 
   const fetchBookings = async () => {
     try {
+      console.log('📖 Fetching bookings from admin panel...');
       setLoading(true);
       const { data, error: fetchError } = await supabase
         .from('bookings')
         .select('*')
         .order('booking_date', { ascending: false });
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('❌ Fetch error:', fetchError);
+        throw fetchError;
+      }
+
+      console.log('✅ Bookings fetched:', data?.length || 0);
       setBookings(data || []);
     } catch (err: any) {
+      console.error('❌ Error fetching bookings:', err);
       setError(err.message || 'Failed to load bookings');
     } finally {
       setLoading(false);
@@ -209,9 +216,8 @@ export default function AdminBookingsPage() {
                         {booking.sharing_type}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center space-x-1 text-sm font-semibold text-gray-900">
-                          <FaRupee className="text-gray-600" />
-                          <span>{booking.amount_paid.toLocaleString()}</span>
+                        <div className="text-sm font-semibold text-gray-900">
+                          ₹{booking.amount_paid.toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4">
