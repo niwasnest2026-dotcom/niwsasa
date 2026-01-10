@@ -143,12 +143,17 @@ export async function POST(request: NextRequest) {
       console.log('✅ Room found:', `Room ${room.room_number} - ${room.sharing_type}`);
     }
 
-    // Check if booking already exists
-    const { data: existingBooking } = await supabaseAdmin
+    // Check if booking already exists by checking notes field for payment ID
+    const { data: existingBookings } = await supabaseAdmin
       .from('bookings')
-      .select('id')
-      .eq('razorpay_payment_id', razorpay_payment_id)
-      .single();
+      .select('id, notes')
+      .eq('property_id', propertyId)
+      .eq('user_id', user.id);
+
+    // Check if any existing booking has this payment ID in notes
+    const existingBooking = existingBookings?.find(b => 
+      b.notes && b.notes.includes(razorpay_payment_id)
+    );
 
     if (existingBooking) {
       console.log('⚠️ Booking already exists:', existingBooking.id);
@@ -192,10 +197,8 @@ export async function POST(request: NextRequest) {
       payment_method: 'razorpay',
       payment_status: 'paid',
       booking_status: 'booked',
-      razorpay_payment_id: razorpay_payment_id, // Changed from payment_id to razorpay_payment_id
-      payment_date: new Date().toISOString(),
       booking_date: new Date().toISOString(),
-      notes: `Razorpay Order: ${razorpay_order_id}`
+      notes: `Payment ID: ${razorpay_payment_id} | Order: ${razorpay_order_id}`
     };
 
     // Add optional fields only if they have values
