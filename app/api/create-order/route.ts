@@ -57,6 +57,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate minimum amount (Razorpay requires minimum ₹1 = 100 paise)
+    if (amount < 1) {
+      console.error('❌ Amount too low:', amount);
+      return NextResponse.json(
+        { success: false, message: 'Minimum payment amount is ₹1' },
+        { status: 400 }
+      );
+    }
+
     // Validate property exists
     console.log('🏠 Validating property:', propertyId);
     const supabaseAdmin = createClient(

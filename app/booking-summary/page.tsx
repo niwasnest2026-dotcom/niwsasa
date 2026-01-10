@@ -443,7 +443,7 @@ export default function BookingSummaryPage() {
                         )}
                         <div className="flex justify-between font-semibold text-lg border-t pt-2">
                           <span>Advance Payment (20%):</span>
-                          <span className="text-primary">₹{Math.round(selectedRoom.price_per_person * 0.2).toLocaleString()}</span>
+                          <span className="text-primary">₹{Math.max(1, Math.round(selectedRoom.price_per_person * 0.2)).toLocaleString()}</span>
                         </div>
                       </>
                     ) : (
@@ -464,7 +464,7 @@ export default function BookingSummaryPage() {
                         )}
                         <div className="flex justify-between font-semibold text-lg border-t pt-2">
                           <span>Advance Payment (20%):</span>
-                          <span className="text-primary">₹{Math.round(property.price * 0.2).toLocaleString()}</span>
+                          <span className="text-primary">₹{Math.max(1, Math.round(property.price * 0.2)).toLocaleString()}</span>
                         </div>
                       </>
                     )}
@@ -472,7 +472,7 @@ export default function BookingSummaryPage() {
                 </div>
 
                 <RazorpayPayment
-                  amount={Math.round((selectedRoom ? selectedRoom.price_per_person : property.price) * 0.2)}
+                  amount={Math.max(1, Math.round((selectedRoom ? selectedRoom.price_per_person : property.price) * 0.2))}
                   propertyId={property.id}
                   roomId={selectedRoom?.id}
                   propertyName={selectedRoom ? `${property.name} - Room ${selectedRoom.room_number}` : property.name}
