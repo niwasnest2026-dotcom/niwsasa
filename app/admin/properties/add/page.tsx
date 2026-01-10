@@ -156,7 +156,7 @@ export default function AddProperty() {
         body: JSON.stringify({
           propertyData,
           selectedAmenities,
-          createDefaultRoom: true
+          createDefaultRoom: false
         }),
       });
 

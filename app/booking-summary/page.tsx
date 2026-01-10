@@ -90,6 +90,8 @@ export default function BookingSummaryPage() {
   }, [moveInDate, duration]);
 
   const fetchProperty = async () => {
+    if (!propertyId) return;
+    
     try {
       // Fetch property details
       const { data: propertyData, error: propertyError } = await supabase
@@ -362,61 +364,55 @@ export default function BookingSummaryPage() {
               </div>
             </div>
 
-            {/* Room Selection */}
+            {/* Room Selection - Only show if rooms exist */}
             {rooms.length > 0 && (
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Select Room *</h3>
 
-                {rooms.length === 0 ? (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-yellow-800">No rooms currently available for this property.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {rooms.map((room) => (
-                      <div
-                        key={room.id}
-                        onClick={() => setSelectedRoom(room)}
-                        className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                          selectedRoom?.id === room.id
-                            ? 'border-primary bg-orange-50'
-                            : 'border-gray-200 hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-semibold text-gray-900">
-                              Room {room.room_number} - {room.room_type}
-                            </h4>
-                            <p className="text-sm text-gray-600">{room.sharing_type}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-lg font-bold text-primary">₹{room.price_per_person.toLocaleString()}/month</p>
-                            {room.security_deposit_per_person > 0 && (
-                              <p className="text-xs text-gray-500">Deposit: ₹{room.security_deposit_per_person.toLocaleString()}</p>
-                            )}
-                          </div>
+                <div className="space-y-3">
+                  {rooms.map((room) => (
+                    <div
+                      key={room.id}
+                      onClick={() => setSelectedRoom(room)}
+                      className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                        selectedRoom?.id === room.id
+                          ? 'border-primary bg-orange-50'
+                          : 'border-gray-200 hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h4 className="font-semibold text-gray-900">
+                            Room {room.room_number} - {room.room_type}
+                          </h4>
+                          <p className="text-sm text-gray-600">{room.sharing_type}</p>
                         </div>
-                        <div className="flex gap-4 text-xs text-gray-600">
-                          {room.has_attached_bathroom && <span>✓ Attached Bathroom</span>}
-                          {room.has_ac && <span>✓ AC</span>}
-                          {room.has_balcony && <span>✓ Balcony</span>}
-                          <span className="ml-auto">
-                            {room.available_beds}/{room.total_beds} beds available
-                          </span>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-primary">₹{room.price_per_person.toLocaleString()}/month</p>
+                          {room.security_deposit_per_person > 0 && (
+                            <p className="text-xs text-gray-500">Deposit: ₹{room.security_deposit_per_person.toLocaleString()}</p>
+                          )}
                         </div>
                       </div>
-                    ))}
-                    {!selectedRoom && (
-                      <p className="text-red-500 text-sm">Please select a room to proceed with payment</p>
-                    )}
-                  </div>
-                )}
+                      <div className="flex gap-4 text-xs text-gray-600">
+                        {room.has_attached_bathroom && <span>✓ Attached Bathroom</span>}
+                        {room.has_ac && <span>✓ AC</span>}
+                        {room.has_balcony && <span>✓ Balcony</span>}
+                        <span className="ml-auto">
+                          {room.available_beds}/{room.total_beds} beds available
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {!selectedRoom && (
+                    <p className="text-red-500 text-sm">Please select a room to proceed with payment</p>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Payment Section */}
-            {selectedRoom && (
+            {/* Payment Section - Show if room selected OR no rooms exist (use property price) */}
+            {(selectedRoom || rooms.length === 0) && (
               <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Payment Details</h3>
 
@@ -429,32 +425,57 @@ export default function BookingSummaryPage() {
                   </div>
 
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Room:</span>
-                      <span className="font-medium">Room {selectedRoom.room_number} - {selectedRoom.sharing_type}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Monthly Rent:</span>
-                      <span>₹{selectedRoom.price_per_person.toLocaleString()}</span>
-                    </div>
-                    {selectedRoom.security_deposit_per_person > 0 && (
-                      <div className="flex justify-between text-gray-600">
-                        <span>Security Deposit:</span>
-                        <span>₹{selectedRoom.security_deposit_per_person.toLocaleString()}</span>
-                      </div>
+                    {selectedRoom ? (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Room:</span>
+                          <span className="font-medium">Room {selectedRoom.room_number} - {selectedRoom.sharing_type}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Monthly Rent:</span>
+                          <span>₹{selectedRoom.price_per_person.toLocaleString()}</span>
+                        </div>
+                        {selectedRoom.security_deposit_per_person > 0 && (
+                          <div className="flex justify-between text-gray-600">
+                            <span>Security Deposit:</span>
+                            <span>₹{selectedRoom.security_deposit_per_person.toLocaleString()}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                          <span>Advance Payment (20%):</span>
+                          <span className="text-primary">₹{Math.round(selectedRoom.price_per_person * 0.2).toLocaleString()}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Property:</span>
+                          <span className="font-medium">{property.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Monthly Rent:</span>
+                          <span>₹{property.price.toLocaleString()}</span>
+                        </div>
+                        {property.security_deposit > 0 && (
+                          <div className="flex justify-between text-gray-600">
+                            <span>Security Deposit:</span>
+                            <span>₹{property.security_deposit.toLocaleString()}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-semibold text-lg border-t pt-2">
+                          <span>Advance Payment (20%):</span>
+                          <span className="text-primary">₹{Math.round(property.price * 0.2).toLocaleString()}</span>
+                        </div>
+                      </>
                     )}
-                    <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                      <span>Advance Payment (20%):</span>
-                      <span className="text-primary">₹{Math.round(selectedRoom.price_per_person * 0.2).toLocaleString()}</span>
-                    </div>
                   </div>
                 </div>
 
                 <RazorpayPayment
-                  amount={Math.round(selectedRoom.price_per_person * 0.2)}
+                  amount={Math.round((selectedRoom ? selectedRoom.price_per_person : property.price) * 0.2)}
                   propertyId={property.id}
-                  roomId={selectedRoom.id}
-                  propertyName={`${property.name} - Room ${selectedRoom.room_number}`}
+                  roomId={selectedRoom?.id}
+                  propertyName={selectedRoom ? `${property.name} - Room ${selectedRoom.room_number}` : property.name}
                   userDetails={userDetails}
                   onSuccess={handlePaymentSuccess}
                   onError={handlePaymentError}
