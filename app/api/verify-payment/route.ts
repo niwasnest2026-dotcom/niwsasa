@@ -176,6 +176,7 @@ export async function POST(request: NextRequest) {
 
     // Create booking data matching the database schema
     // Note: security_deposit_per_person is NOT NULL in the database, so always include it
+    const amountPaid = Math.max(1, Math.round((pricePerPerson || 0) * 0.2)); // Minimum ₹1
     const bookingData: any = {
       property_id: propertyId,
       user_id: user.id,
@@ -186,8 +187,8 @@ export async function POST(request: NextRequest) {
       price_per_person: pricePerPerson || 0,
       security_deposit_per_person: securityDeposit || 0, // Required field - always include
       total_amount: (pricePerPerson || 0) + (securityDeposit || 0),
-      amount_paid: Math.round((pricePerPerson || 0) * 0.2),
-      amount_due: Math.round((pricePerPerson || 0) * 0.8) + (securityDeposit || 0),
+      amount_paid: amountPaid,
+      amount_due: Math.max(0, (pricePerPerson || 0) - amountPaid) + (securityDeposit || 0),
       payment_method: 'razorpay',
       payment_status: 'paid',
       booking_status: 'booked',
