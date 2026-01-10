@@ -196,14 +196,18 @@ export async function POST(request: NextRequest) {
 
     if (bookingError) {
       console.error('❌ Booking creation failed:', bookingError);
-      console.error('📝 Booking data that failed:', { ...bookingData, notes: '[PAYMENT_INFO]' });
-      
+      console.error('📝 Full error details:', JSON.stringify(bookingError, null, 2));
+      console.error('📝 Booking data that failed:', JSON.stringify({ ...bookingData, notes: '[PAYMENT_INFO]' }, null, 2));
+
       return NextResponse.json({
         success: false,
         message: 'Payment received but booking pending. Support will contact you.',
         razorpay_payment_id: razorpay_payment_id,
         support_needed: true,
-        error: bookingError.message
+        error: bookingError.message,
+        error_details: bookingError.details,
+        error_hint: bookingError.hint,
+        error_code: bookingError.code
       }, { status: 500 });
     }
 
