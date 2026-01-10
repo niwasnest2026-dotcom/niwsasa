@@ -33,9 +33,7 @@ export default function PaymentPage() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     fullName: '',
-    email: '',
-    phone: '',
-    whatsappNumber: ''
+    email: ''
   });
 
   // Get search parameters for duration and dates
@@ -428,55 +426,6 @@ export default function PaymentPage() {
                       placeholder="Enter your email"
                       title="Email cannot be changed as you are logged in"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                        setFormData(prev => ({ ...prev, phone: value }));
-                      }}
-                      required
-                      minLength={10}
-                      maxLength={10}
-                      pattern="[0-9]{10}"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder="Enter 10-digit phone number"
-                    />
-                    {formData.phone && formData.phone.length > 0 && formData.phone.length !== 10 && (
-                      <p className="text-red-500 text-xs mt-1">Phone number must be exactly 10 digits</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      WhatsApp Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="whatsappNumber"
-                      value={formData.whatsappNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                        setFormData(prev => ({ ...prev, whatsappNumber: value }));
-                      }}
-                      required
-                      minLength={10}
-                      maxLength={10}
-                      pattern="[0-9]{10}"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder="Enter 10-digit WhatsApp number"
-                    />
-                    {formData.whatsappNumber && formData.whatsappNumber.length > 0 && formData.whatsappNumber.length !== 10 && (
-                      <p className="text-red-500 text-xs mt-1">WhatsApp number must be exactly 10 digits</p>
-                    )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      Property owner will contact you on this number
-                    </p>
                   </div>
                 </div>
 
