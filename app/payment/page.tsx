@@ -220,7 +220,7 @@ export default function PaymentPage() {
     }
 
     // Validate form data
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.whatsappNumber) {
+    if (!formData.fullName || !formData.email) {
       alert('Please fill in all required fields');
       return;
     }
@@ -230,8 +230,6 @@ export default function PaymentPage() {
       propertyId: property.id,
       fullName: formData.fullName,
       email: formData.email,
-      phone: formData.phone,
-      whatsappNumber: formData.whatsappNumber,
     });
 
     // Add room/sharing type parameters
