@@ -418,6 +418,7 @@ export default function ProfilePage() {
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E55A0F'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#FF6711'}
                 >
+                  <FaCalendarAlt className="mr-2" />
                   View My Bookings
                 </Link>
                 <Link
@@ -453,6 +454,9 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Recent Bookings Preview */}
+            <RecentBookingsSection userId={user.id} />
+
             {/* Owner Details Section */}
             {showOwnerDetails && (
               <OwnerDetailsSection userId={user.id} />
@@ -460,6 +464,108 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Recent Bookings Section Component
+function RecentBookingsSection({ userId }: { userId: string }) {
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRecentBookings();
+  }, [userId]);
+
+  const fetchRecentBookings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('user_id', userId)
+        .order('booking_date', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setBookings(data || []);
+    } catch (error) {
+      console.error('Error fetching recent bookings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="mt-8 pt-8 border-t border-gray-200">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-24 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 pt-8 border-t border-gray-200">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Recent Bookings</h3>
+        {bookings.length > 0 && (
+          <Link href="/bookings" className="text-sm font-medium" style={{ color: '#FF6711' }}>
+            View All →
+          </Link>
+        )}
+      </div>
+      
+      {bookings.length === 0 ? (
+        <div className="bg-gray-50 rounded-lg p-6 text-center">
+          <FaCalendarAlt className="mx-auto text-3xl text-gray-400 mb-3" />
+          <p className="text-gray-600 mb-4">No bookings yet</p>
+          <Link
+            href="/listings"
+            className="inline-block px-4 py-2 text-white font-medium rounded-lg transition-colors"
+            style={{ backgroundColor: '#FF6711' }}
+          >
+            Browse Properties
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {bookings.map((booking) => (
+            <div key={booking.id} className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FF6711' }}>
+                    <FaHome className="text-white" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{booking.guest_name}</p>
+                    <p className="text-sm text-gray-600">
+                      {new Date(booking.booking_date).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold" style={{ color: '#FF6711' }}>
+                  ₹{booking.amount_paid?.toLocaleString() || 0}
+                </p>
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  booking.payment_status === 'paid' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {booking.payment_status === 'paid' ? 'Paid' : 'Pending'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
