@@ -111,6 +111,14 @@ export default function AddProperty() {
     setSubmitting(true);
 
     try {
+      // Get session for API authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Session expired. Please login again.');
+        router.push('/');
+        return;
+      }
+
       // Prepare property data with automatic anchoring
       const propertyData = {
         name: formData.name,
@@ -119,78 +127,46 @@ export default function AddProperty() {
         city: formData.city,
         area: formData.area,
         price: parseFloat(formData.price),
-        security_deposit: formData.security_deposit ? parseFloat(formData.security_deposit) : parseFloat(formData.price) * 2, // Auto-anchor: 2x rent if not specified
-        available_months: formData.available_months ? parseInt(formData.available_months) : 12, // Auto-anchor: 12 months default
+        security_deposit: formData.security_deposit ? parseFloat(formData.security_deposit) : parseFloat(formData.price) * 2,
+        available_months: formData.available_months ? parseInt(formData.available_months) : 12,
         property_type: formData.property_type,
         gender_preference: formData.gender_preference,
         featured_image: formData.featured_image || null,
-        rating: formData.rating ? parseFloat(formData.rating) : 4.0, // Auto-anchor: 4.0 default rating
+        rating: formData.rating ? parseFloat(formData.rating) : 4.0,
         google_maps_url: formData.google_maps_url || null,
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-        // Auto-anchor owner details - ensure they're always provided
         owner_name: formData.owner_name.trim() || 'Property Owner',
         owner_phone: formData.owner_phone.trim() || '+91 9876543210',
         payment_instructions: formData.payment_instructions.trim() || 'Please contact the owner for payment details of the remaining amount.',
-        // Auto-anchor property features
         verified: formData.verified,
         instant_book: formData.instant_book,
         secure_booking: formData.secure_booking,
-        is_available: true, // Auto-anchor: Always available when created
-        // Auto-anchor timestamps
+        is_available: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      const { data: property, error: propertyError } = await supabase
-        .from('properties')
-        .insert([propertyData] as any)
-        .select()
-        .single();
+      const response = await fetch('/api/admin/add-property', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          propertyData,
+          selectedAmenities,
+          createDefaultRoom: true
+        }),
+      });
 
-      if (propertyError) throw propertyError;
+      const result = await response.json();
 
-      // Auto-anchor amenities if selected
-      if (selectedAmenities.length > 0 && property) {
-        const amenityInserts = selectedAmenities.map(amenityId => ({
-          property_id: (property as any).id,
-          amenity_id: amenityId,
-        }));
-
-        const { error: amenitiesError } = await supabase
-          .from('property_amenities')
-          .insert(amenityInserts as any);
-
-        if (amenitiesError) throw amenitiesError;
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to add property');
       }
 
-      // Auto-anchor: Create default room if none exist
-      const { error: roomError } = await supabase
-        .from('property_rooms')
-        .insert([{
-          property_id: (property as any).id,
-          room_number: 'Room 1',
-          room_type: 'Standard',
-          sharing_type: 'Single',
-          price_per_person: parseFloat(formData.price),
-          security_deposit_per_person: propertyData.security_deposit,
-          total_beds: 1,
-          available_beds: 1,
-          floor_number: 1,
-          has_attached_bathroom: true,
-          has_balcony: false,
-          has_ac: false,
-          room_size_sqft: 100,
-          description: 'Standard room with basic amenities',
-          is_available: true
-        }] as any);
-
-      if (roomError) {
-        console.warn('Failed to create default room:', roomError);
-        // Don't fail the entire operation for room creation
-      }
-
-      alert('Property added successfully with automatic anchoring!');
+      alert('Property added successfully!');
       router.push('/admin/properties');
     } catch (error) {
       console.error('Error adding property:', error);

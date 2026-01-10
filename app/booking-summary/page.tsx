@@ -217,32 +217,31 @@ export default function BookingSummaryPage() {
                 
                 <div className="flex items-center text-gray-600">
                   <FaRupeeSign className="mr-3" />
-                  <span>Monthly Rent: ₹{property.price.toLocaleString()}</span>
+                  <span>Monthly Rent: ₹{(selectedRoom ? selectedRoom.price_per_person : property.price).toLocaleString()}</span>
                 </div>
                 
-                {property.security_deposit > 0 && (
+                {(selectedRoom ? selectedRoom.security_deposit_per_person : property.security_deposit) > 0 && (
                   <div className="flex items-center text-gray-600">
                     <FaRupeeSign className="mr-3" />
-                    <span>Security Deposit: ₹{property.security_deposit.toLocaleString()}</span>
+                    <span>Security Deposit: ₹{(selectedRoom ? selectedRoom.security_deposit_per_person : property.security_deposit).toLocaleString()}</span>
                   </div>
                 )}
               </div>
 
-              {/* Owner Contact */}
-              {(property.owner_name || property.owner_phone) && (
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold text-gray-900 mb-2">Owner Contact</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    {property.owner_name && <div>Name: {property.owner_name}</div>}
-                    {property.owner_phone && (
-                      <div className="flex items-center">
-                        <FaPhone className="mr-2" />
-                        <span>{property.owner_phone}</span>
-                      </div>
-                    )}
-                  </div>
+              {/* Owner Contact - Hidden until payment is complete */}
+              <div className="border-t pt-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
+                    <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Owner Contact
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Owner details will be shared after successful payment confirmation.
+                  </p>
                 </div>
-              )}
+              </div>
             </div>
           </div>
 

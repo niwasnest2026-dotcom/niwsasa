@@ -17,6 +17,8 @@ interface Booking {
   amount_paid: number;
   amount_due: number;
   price_per_person: number;
+  security_deposit_per_person: number;
+  total_amount: number;
   sharing_type: string;
   payment_id: string;
   notes: string;
@@ -174,9 +176,11 @@ export default function AdminBookingsPage() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Contact</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Booking Date</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Room Type</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Amount Paid</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Payment Status</th>
-                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Booking Status</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Monthly Rent</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Security Deposit</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Advance Paid</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Due to Owner</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -216,19 +220,37 @@ export default function AdminBookingsPage() {
                         {booking.sharing_type}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-gray-900">
-                          ₹{booking.amount_paid.toLocaleString()}
+                        <div className="text-sm font-medium text-gray-900">
+                          ₹{(booking.price_per_person || 0).toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(booking.payment_status)}`}>
-                          {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
-                        </span>
+                        <div className="text-sm font-medium text-gray-900">
+                          ₹{(booking.security_deposit_per_person || 0).toLocaleString()}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getBookingStatusColor(booking.booking_status)}`}>
-                          {booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)}
-                        </span>
+                        <div className="text-sm font-semibold text-green-600">
+                          ₹{(booking.amount_paid || 0).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500">20% advance</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-semibold text-orange-600">
+                          ₹{(booking.amount_due || 0).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500">80% + deposit</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(booking.payment_status)}`}>
+                            {booking.payment_status.charAt(0).toUpperCase() + booking.payment_status.slice(1)}
+                          </span>
+                          <br />
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getBookingStatusColor(booking.booking_status)}`}>
+                            {booking.booking_status.charAt(0).toUpperCase() + booking.booking_status.slice(1)}
+                          </span>
+                        </div>
                       </td>
                     </tr>
                   ))}

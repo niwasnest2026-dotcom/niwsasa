@@ -87,12 +87,27 @@ export default function AdminProperties() {
     setDeleteLoading(propertyId);
 
     try {
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .eq('id', propertyId);
+      // Get session for API authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Session expired. Please login again.');
+        return;
+      }
 
-      if (error) throw error;
+      const response = await fetch('/api/admin/delete-property', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ propertyId }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to delete property');
+      }
 
       setProperties(prev => prev.filter(p => p.id !== propertyId));
       alert('Property deleted successfully!');

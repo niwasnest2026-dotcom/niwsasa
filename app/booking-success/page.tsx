@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 
 interface BookingDetails {
   id: string;
+  property_id: string;
   property_name: string;
   guest_name: string;
   guest_email: string;
@@ -19,11 +20,21 @@ interface BookingDetails {
   security_deposit_per_person: number;
 }
 
+interface PropertyOwner {
+  owner_name: string;
+  owner_phone: string;
+  payment_instructions: string;
+  address: string;
+  city: string;
+  google_maps_url: string;
+}
+
 export default function BookingSuccessPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const bookingId = searchParams.get('booking_id');
   const [booking, setBooking] = useState<BookingDetails | null>(null);
+  const [propertyOwner, setPropertyOwner] = useState<PropertyOwner | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +83,20 @@ export default function BookingSuccessPage() {
 
         console.log('✅ Booking fetched successfully:', data);
         setBooking(data);
+
+        // Fetch property owner details
+        if (data.property_id) {
+          const { data: propertyData, error: propertyError } = await supabase
+            .from('properties')
+            .select('owner_name, owner_phone, payment_instructions, address, city, google_maps_url')
+            .eq('id', data.property_id)
+            .single();
+
+          if (!propertyError && propertyData) {
+            console.log('✅ Property owner details fetched:', propertyData);
+            setPropertyOwner(propertyData);
+          }
+        }
       } catch (err: any) {
         console.error('❌ Error:', err);
         setError(err.message || 'Failed to load booking details');
@@ -211,11 +236,76 @@ export default function BookingSuccessPage() {
                   <span className="text-2xl font-bold text-green-600">₹{booking.amount_paid.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-orange-700 font-semibold">Amount Due (80%):</span>
+                  <span className="text-orange-700 font-semibold">Amount Due to Owner:</span>
                   <span className="text-2xl font-bold text-orange-600">₹{booking.amount_due.toLocaleString()}</span>
                 </div>
               </div>
             </div>
+
+            {/* Owner Details - Only shown after payment */}
+            {propertyOwner && (
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-xl p-6">
+                <h3 className="text-lg font-bold text-orange-900 mb-4 flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Property Owner Details
+                </h3>
+                <div className="space-y-3">
+                  {propertyOwner.owner_name && (
+                    <div className="flex items-center space-x-3">
+                      <FaUser className="text-orange-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">Owner Name</p>
+                        <p className="text-gray-900 font-semibold">{propertyOwner.owner_name}</p>
+                      </div>
+                    </div>
+                  )}
+                  {propertyOwner.owner_phone && (
+                    <div className="flex items-center space-x-3">
+                      <FaPhone className="text-orange-600" />
+                      <div>
+                        <p className="text-sm text-gray-500">Contact Number</p>
+                        <a href={`tel:${propertyOwner.owner_phone}`} className="text-orange-700 font-semibold hover:underline">
+                          {propertyOwner.owner_phone}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {propertyOwner.address && (
+                    <div className="flex items-start space-x-3">
+                      <FaHome className="text-orange-600 mt-1" />
+                      <div>
+                        <p className="text-sm text-gray-500">Property Address</p>
+                        <p className="text-gray-900">{propertyOwner.address}, {propertyOwner.city}</p>
+                      </div>
+                    </div>
+                  )}
+                  {propertyOwner.google_maps_url && (
+                    <div className="pt-2">
+                      <a
+                        href={propertyOwner.google_maps_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Open in Google Maps
+                      </a>
+                    </div>
+                  )}
+                  {propertyOwner.payment_instructions && (
+                    <div className="mt-4 p-4 bg-white border border-orange-200 rounded-lg">
+                      <p className="text-sm font-semibold text-orange-800 mb-1">Payment Instructions:</p>
+                      <p className="text-gray-700 text-sm">{propertyOwner.payment_instructions}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
