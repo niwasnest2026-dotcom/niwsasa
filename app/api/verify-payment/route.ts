@@ -70,11 +70,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify Razorpay signature
+    const razorpaySecret = process.env.RAZORPAY_KEY_SECRET || ENV_CONFIG.RAZORPAY_KEY_SECRET;
+    console.log('🔑 Using Razorpay Secret:', razorpaySecret ? `${razorpaySecret.substring(0, 10)}...` : 'MISSING');
+    
     const signatureBody = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac('sha256', ENV_CONFIG.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', razorpaySecret)
       .update(signatureBody.toString())
       .digest('hex');
+
+    console.log('🔐 Signature Check:', {
+      signatureBody: signatureBody.substring(0, 30) + '...',
+      expectedSignatureStart: expectedSignature.substring(0, 20) + '...',
+      receivedSignatureStart: razorpay_signature.substring(0, 20) + '...',
+      match: expectedSignature === razorpay_signature
+    });
 
     const isAuthentic = expectedSignature === razorpay_signature;
 
@@ -157,36 +167,43 @@ export async function POST(request: NextRequest) {
     const securityDeposit = room ? (room.security_deposit_per_person || 0) : (property.security_deposit || 0);
     const sharingType = room ? room.sharing_type : 'Single Room';
 
+    console.log('💰 Pricing Info:', {
+      pricePerPerson,
+      securityDeposit,
+      sharingType,
+      roomProvided: !!room
+    });
+
     // Create booking data matching the database schema
-    const bookingData = {
+    const bookingData: any = {
       property_id: propertyId,
-      room_id: roomId || null, // Include room_id if provided
-      user_id: user.id, // Use authenticated user ID from session
+      user_id: user.id,
       guest_name: userDetails.name,
       guest_email: userDetails.email || user.email,
       guest_phone: userDetails.phone,
-
-      // Booking details (use room-specific pricing)
       sharing_type: sharingType,
-      price_per_person: pricePerPerson,
-      security_deposit_per_person: securityDeposit,
-      total_amount: pricePerPerson,
-      amount_paid: Math.round(pricePerPerson * 0.2), // 20% advance
-      amount_due: Math.round(pricePerPerson * 0.8), // 80% remaining
-
-      // Payment details
+      price_per_person: pricePerPerson || 0,
+      total_amount: pricePerPerson || 0,
+      amount_paid: Math.round((pricePerPerson || 0) * 0.2),
+      amount_due: Math.round((pricePerPerson || 0) * 0.8),
       payment_method: 'razorpay',
       payment_status: 'paid',
-      booking_status: 'booked', // Use 'booked' status as required
-      payment_id: razorpay_payment_id, // Store payment ID in the correct field
+      booking_status: 'booked',
+      payment_id: razorpay_payment_id,
       payment_date: new Date().toISOString(),
       booking_date: new Date().toISOString(),
-      notes: room
-        ? `Room: ${room.room_number} (${room.sharing_type}) | Razorpay Payment: ${razorpay_payment_id} | Order: ${razorpay_order_id}`
-        : `Razorpay Payment: ${razorpay_payment_id} | Order: ${razorpay_order_id} | Signature: ${razorpay_signature}`
+      notes: `Razorpay Payment: ${razorpay_payment_id} | Order: ${razorpay_order_id}`
     };
 
-    console.log('📝 Booking data to insert:', { ...bookingData, notes: '[PAYMENT_INFO]' });
+    // Add optional fields only if they have values
+    if (roomId) {
+      bookingData.room_id = roomId;
+    }
+    if (securityDeposit > 0) {
+      bookingData.security_deposit_per_person = securityDeposit;
+    }
+
+    console.log('📝 Booking data to insert:', JSON.stringify(bookingData, null, 2));
 
     const { data: booking, error: bookingError } = await supabaseAdmin
       .from('bookings')

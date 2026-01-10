@@ -8,7 +8,7 @@ export const ENV_CONFIG = {
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhwYXN2aG13dWhpcHp2Y3FvaGhxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjQ5OTk4MywiZXhwIjoyMDgyMDc1OTgzfQ.OxhiMU3PjWc9OIityt7NWCmWq90VrCihFulZKu8Isy4',
   
   // Razorpay Configuration
-  RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || '2yXHlj5JUdfJRK0Ile7x53LU',
+  RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || '',
   
   // Site URL
   SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.niwasnest.com'
