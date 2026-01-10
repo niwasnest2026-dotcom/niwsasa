@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { FaArrowLeft, FaPhone, FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
 import Link from 'next/link';
 
 interface Booking {
@@ -193,15 +193,9 @@ export default function AdminBookingsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <FaEnvelope className="text-gray-400" />
-                            <span>{booking.guest_email}</span>
-                          </div>
-                          <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <FaPhone className="text-gray-400" />
-                            <span>{booking.guest_phone}</span>
-                          </div>
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                          <FaEnvelope className="text-gray-400" />
+                          <span>{booking.guest_email}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
