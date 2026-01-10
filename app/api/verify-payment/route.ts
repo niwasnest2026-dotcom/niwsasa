@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
     const { data: existingBooking } = await supabaseAdmin
       .from('bookings')
       .select('id')
-      .eq('payment_id', razorpay_payment_id)
+      .eq('razorpay_payment_id', razorpay_payment_id)
       .single();
 
     if (existingBooking) {
@@ -192,10 +192,10 @@ export async function POST(request: NextRequest) {
       payment_method: 'razorpay',
       payment_status: 'paid',
       booking_status: 'booked',
-      payment_id: razorpay_payment_id,
+      razorpay_payment_id: razorpay_payment_id, // Changed from payment_id to razorpay_payment_id
       payment_date: new Date().toISOString(),
       booking_date: new Date().toISOString(),
-      notes: `Razorpay Payment: ${razorpay_payment_id} | Order: ${razorpay_order_id}`
+      notes: `Razorpay Order: ${razorpay_order_id}`
     };
 
     // Add optional fields only if they have values
